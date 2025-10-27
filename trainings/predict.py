@@ -14,7 +14,8 @@ if not HOPSWORKS_API_KEY:
     raise ValueError(
         "❌ Missing Hopsworks API key! Please set 'AQI_FORECAST_API_KEY' as a GitHub Secret."
     )
-project = hopsworks.login(api_key_value=API_KEY)
+project = hopsworks.login(api_key_value=HOPSWORKS_API_KEY)
+
 fs = project.get_feature_store()
 mr = project.get_model_registry()
 print("✅ Connected to Hopsworks")
