@@ -19,7 +19,6 @@ env/
 # --------------------------------------------------
 # Root files to ignore
 # --------------------------------------------------
-*.csv
 EDA*.ipynb
 scheduler*.py
 
@@ -31,15 +30,21 @@ data/cleaned/
 data/raw_aqi_data.csv
 data/raw_weather_data.csv
 data/forecast_weather_cleaned.csv
+
+# Keep CSVs in predictions
 data/predictions/*
-!data/predictions/latest_predictions.csv  # keep only latest prediction
+!data/predictions/latest_predictions.csv
+
+# Hide Parquet files
+*.parquet
 
 # --------------------------------------------------
 # Model Artifacts
 # --------------------------------------------------
 models/
 !models/README.md
-# !models/my_trained_model.pkl  # optional if you want to include a specific model
+# Optional: track only specific models
+# !models/my_trained_model.pkl
 
 # --------------------------------------------------
 # Hopsworks / Cache
