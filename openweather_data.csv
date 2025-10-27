@@ -1,0 +1,2 @@
+city,datetime,temp,humidity,pressure,wind_speed,aqi,pm2_5,pm10,no2,so2,co
+Karachi,2025-10-22 08:08:59,36.06,15,1011,6.69,5,93.06,191.59,3.01,10.54,402.51
