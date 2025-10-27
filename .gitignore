@@ -1,0 +1,59 @@
+# --------------------------------------------------
+# Python / General
+# --------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+*.ipynb_checkpoints/
+.DS_Store
+.env
+.venv/
+venv/
+env/
+*.sqlite3
+*.db
+
+# --------------------------------------------------
+# Data / Outputs
+# --------------------------------------------------
+# Ignore all raw/cleaned data except important CSVs
+data/raw_data/
+data/cleaned/
+data/raw_aqi_data.csv
+data/raw_weather_data.csv
+data/forecast_weather_cleaned.csv
+data/predictions/*
+!data/predictions/latest_predictions.csv  # keep only latest prediction
+
+# --------------------------------------------------
+# Model Artifacts
+# --------------------------------------------------
+# Ignore models by default
+models/
+!models/README.md  # optional placeholder
+# You can choose to commit trained models if you want others to use them
+# or ignore them if they are big and can be regenerated
+# Example: !models/my_trained_model.pkl  # only if necessary
+
+# --------------------------------------------------
+# Hopsworks / Cache
+# --------------------------------------------------
+hopsworks_cache/
+tmp/
+cache/
+__MACOSX/
+
+# --------------------------------------------------
+# IDE / Editor
+# --------------------------------------------------
+.vscode/
+.idea/
+*.code-workspace
+
+# --------------------------------------------------
+# CI/CD / Scheduler
+# --------------------------------------------------
+.github/*.log
