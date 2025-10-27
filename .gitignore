@@ -17,9 +17,15 @@ env/
 *.db
 
 # --------------------------------------------------
+# Root files to ignore
+# --------------------------------------------------
+*.csv
+EDA*.ipynb
+scheduler*.py
+
+# --------------------------------------------------
 # Data / Outputs
 # --------------------------------------------------
-# Ignore all raw/cleaned data except important CSVs
 data/raw_data/
 data/cleaned/
 data/raw_aqi_data.csv
@@ -31,12 +37,9 @@ data/predictions/*
 # --------------------------------------------------
 # Model Artifacts
 # --------------------------------------------------
-# Ignore models by default
 models/
-!models/README.md  # optional placeholder
-# You can choose to commit trained models if you want others to use them
-# or ignore them if they are big and can be regenerated
-# Example: !models/my_trained_model.pkl  # only if necessary
+!models/README.md
+# !models/my_trained_model.pkl  # optional if you want to include a specific model
 
 # --------------------------------------------------
 # Hopsworks / Cache
