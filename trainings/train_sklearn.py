@@ -22,11 +22,12 @@ logger = logging.getLogger(__name__)
 # ------------------------------------------------
 # Load environment variables
 # ------------------------------------------------
-load_dotenv()
+HOPSWORKS_API_KEY = os.environ.get("AQI_FORECAST_API_KEY")  # must match your secret name
 
-HOPSWORKS_API_KEY = os.getenv("aqi_forecast_api_key")
 if not HOPSWORKS_API_KEY:
-    raise ValueError("❌ Missing Hopsworks API key! Please set 'aqi_forecast_api_key' in your .env file.")
+    raise ValueError(
+        "❌ Missing Hopsworks API key! Please set 'AQI_FORECAST_API_KEY' as a GitHub Secret."
+    )
 
 # ------------------------------------------------
 # Connect to Hopsworks
