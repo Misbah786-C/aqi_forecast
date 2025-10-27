@@ -23,17 +23,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 ENV_PATH = os.path.join(BASE_DIR, ".env")
 
 if not os.path.exists(ENV_PATH):
-    raise FileNotFoundError(f"❌ .env file not found at {ENV_PATH}")
+    raise FileNotFoundError(f".env file not found at {ENV_PATH}")
 
 load_dotenv(ENV_PATH)
 
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-AQICN_TOKEN = os.getenv("AQICN_TOKEN")
-HOPSWORKS_API_KEY = os.getenv("aqi_forecast_api_key")  # 👈 matches your .env key name
+OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
+AQICN_TOKEN = os.environ.get("AQICN_TOKEN")
+HOPSWORKS_API_KEY = os.environ.get("AQI_FORECAST_API_KEY") 
 
-CITY = os.getenv("CITY", "Karachi")
-LAT = float(os.getenv("LAT", 24.8607))
-LON = float(os.getenv("LON", 67.0011))
+CITY = os.environ.get("CITY", "Karachi")
+LAT = float(os.environ.get("LAT", 24.8607))
+LON = float(os.environ.get("LON", 67.0011))
 
 TRAIN_DATA_PATH = os.path.join(BASE_DIR, "data", "features", "training_dataset.csv")
 
@@ -41,7 +41,7 @@ TRAIN_DATA_PATH = os.path.join(BASE_DIR, "data", "features", "training_dataset.c
 # Key check
 # ------------------------------------------------
 if not OPENWEATHER_API_KEY or not AQICN_TOKEN or not HOPSWORKS_API_KEY:
-    raise ValueError("❌ Missing one or more API keys in .env file")
+    raise ValueError("Required secrets are not set in environment variables.")
 
 # ------------------------------------------------
 # Fetch live data
