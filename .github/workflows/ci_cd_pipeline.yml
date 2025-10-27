@@ -3,7 +3,7 @@ name: AQI Forecast CI/CD Pipeline
 on:
   schedule:
     - cron: "0 * * * *"  # runs every hour (UTC)
-  workflow_dispatch:      # allow manual trigger
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -43,11 +43,11 @@ jobs:
           pip list | grep hopsworks
 
       # Step 1: Backfill latest data
-      - name: 🌦️ Backfill AQI & weather data
-        run: python features/backfill_data.py
+      - name: Backfill AQI & weather data
+        run: python features/features/backfill.py
 
       # Step 2: Train model
-      - name: 🚀 Train Random Forest model
+      - name: Train Random Forest model
         run: python trainings/train_sklearn.py
 
       # Step 3: Predict using latest model
