@@ -44,7 +44,7 @@ jobs:
 
       # Step 1: Backfill latest data
       - name: 🌦️ Backfill AQI & weather data
-        run: python data_pipeline/backfill_data.py
+        run: python features/features/backfill_data.py
 
       # Step 2: Train model
       - name: 🚀 Train Random Forest model
