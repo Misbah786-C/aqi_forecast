@@ -8,11 +8,12 @@ from dotenv import load_dotenv
 # ------------------------------------------------
 # 🔐 Connect to Hopsworks
 # ------------------------------------------------
-load_dotenv()
-API_KEY = os.getenv("aqi_forecast_api_key") or os.getenv("HOPSWORKS_API_KEY")
-if not API_KEY:
-    raise ValueError("❌ Missing Hopsworks API key!")
+HOPSWORKS_API_KEY = os.environ.get("AQI_FORECAST_API_KEY")  # must match secret name
 
+if not HOPSWORKS_API_KEY:
+    raise ValueError(
+        "❌ Missing Hopsworks API key! Please set 'AQI_FORECAST_API_KEY' as a GitHub Secret."
+    )
 project = hopsworks.login(api_key_value=API_KEY)
 fs = project.get_feature_store()
 mr = project.get_model_registry()
