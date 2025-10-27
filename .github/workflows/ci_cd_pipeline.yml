@@ -44,16 +44,16 @@ jobs:
 
       # Step 1: Backfill latest data
       - name: Backfill AQI & weather data
-        run: python aqi_forecast/features/features/backfill.py
+        run: python features/features/backfill.py
 
 
       # Step 2: Train model
       - name: Train Random Forest model
-        run: python aqi_forecast/trainings/train_sklearn.py
+        run: python trainings/train_sklearn.py
 
       # Step 3: Predict using latest model
       - name: Generate predictions
-        run: python aqi_forecast/trainings/predict.py
+        run: python trainings/predict.py
 
       # Step 4: Commit predictions
       - name: Commit prediction results
