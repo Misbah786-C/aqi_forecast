@@ -16,16 +16,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s"
 )
 
-# ------------------------------------------------
-# Load environment variables
-# ------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ENV_PATH = os.path.join(BASE_DIR, ".env")
-
-if not os.path.exists(ENV_PATH):
-    raise FileNotFoundError(f".env file not found at {ENV_PATH}")
-
-load_dotenv(ENV_PATH)
+# Read secrets from environment variables (GitHub Secrets)
 
 OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 AQICN_TOKEN = os.environ.get("AQICN_TOKEN")
@@ -35,6 +26,7 @@ CITY = os.environ.get("CITY", "Karachi")
 LAT = float(os.environ.get("LAT", 24.8607))
 LON = float(os.environ.get("LON", 67.0011))
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TRAIN_DATA_PATH = os.path.join(BASE_DIR, "data", "features", "training_dataset.csv")
 
 # ------------------------------------------------
