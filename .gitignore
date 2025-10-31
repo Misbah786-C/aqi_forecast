@@ -19,21 +19,8 @@ env/
 # --------------------------------------------------
 # Root files to ignore
 # --------------------------------------------------
-EDA*.ipynb
 scheduler*.py
 
-# --------------------------------------------------
-# Data / Outputs
-# --------------------------------------------------
-data/raw_data/
-data/cleaned/
-data/raw_aqi_data.csv
-data/raw_weather_data.csv
-data/forecast_weather_cleaned.csv
-
-# Keep CSVs in predictions
-data/predictions/*
-!data/predictions/latest_predictions.csv
 
 # Hide Parquet files
 *.parquet
@@ -65,3 +52,4 @@ __MACOSX/
 # CI/CD / Scheduler
 # --------------------------------------------------
 .github/*.log
+
