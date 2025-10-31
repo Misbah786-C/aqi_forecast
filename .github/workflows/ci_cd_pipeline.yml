@@ -46,6 +46,20 @@ jobs:
       - name: Backfill AQI & weather data
         run: python features/features/backfill.py
 
+      # Step 1.5: Run EDA on latest features
+      - name: Run EDA
+        env:
+          AQI_FORECAST_API_KEY: ${{ secrets.AQI_FORECAST_API_KEY }}
+        run: python eda.py
+
+      # Step 1.6: Commit EDA outputs
+      - name: Commit EDA results
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add eda_outputs/* || true
+          git commit -m "📊 Auto-update: EDA results [skip ci]" || echo "No changes to commit"
+          git push || echo "No changes to push"
 
       # Step 2: Train model
       - name: Train Random Forest model
