@@ -25,7 +25,7 @@ jobs:
       - name: Run EDA
         env:
           aqi_forecast_api_key: ${{ secrets.aqi_forecast_api_key }}
-        run: python aqi_forecast/eda.py
+        run: python eda.py
 
       - name: Commit and push EDA results
         run: |
