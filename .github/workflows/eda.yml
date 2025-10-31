@@ -3,7 +3,7 @@ name: Run EDA from Hopsworks
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 6 * * *"  # optional: runs daily at 6 AM UTC
+    - cron: "0 6 * * *"  # daily at 6 AM UTC
 
 jobs:
   eda:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Run EDA
         env:
-          aqi_forecast_api_key: ${{ secrets.AQI_FORECAST_API_KEY }}
+          AQI_FORECAST_API_KEY: ${{ secrets.AQI_FORECAST_API_KEY }}
         run: python eda.py
 
       - name: Commit and push EDA results
@@ -32,5 +32,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add eda_outputs/*
-          git commit -m "📊 Updated EDA results from Hopsworks"
+          git commit -m "📊 Updated EDA results from Hopsworks" || echo "No changes to commit"
           git push
