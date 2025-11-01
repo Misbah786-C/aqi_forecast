@@ -14,12 +14,11 @@ log = logging.getLogger("predict")
 
 
 # --- Load Environment Variables ---
-HOPSWORKS_API_KEY = os.environ.get("AQI_FORECAST_API_KEY")  # must match your secret name
+load_dotenv()
 
-if not HOPSWORKS_API_KEY:
-    raise ValueError(
-        "❌ Missing Hopsworks API key! Please set 'AQI_FORECAST_API_KEY' as a GitHub Secret."
-    )
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+AQICN_TOKEN = os.getenv("AQICN_TOKEN")
+HOPSWORKS_API_KEY = os.getenv("AQI_FORECAST_API_KEY")
 
 
 # --- Features to Use for Prediction ---

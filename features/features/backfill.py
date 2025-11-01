@@ -17,10 +17,11 @@ logging.basicConfig(
 )
 
 # Read secrets from environment variables (GitHub Secrets)
+load_dotenv()
 
-OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
-AQICN_TOKEN = os.environ.get("AQICN_TOKEN")
-HOPSWORKS_API_KEY = os.environ.get("AQI_FORECAST_API_KEY") 
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+AQICN_TOKEN = os.getenv("AQICN_TOKEN")
+HOPSWORKS_API_KEY = os.getenv("AQI_FORECAST_API_KEY")
 
 CITY = os.environ.get("CITY", "Karachi")
 LAT = float(os.environ.get("LAT", 24.8607))
