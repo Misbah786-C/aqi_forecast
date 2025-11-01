@@ -2,7 +2,7 @@ name: AQI Forecast CI/CD Pipeline
 
 on:
   schedule:
-    - cron: "0 * * * *"  # runs every hour (UTC)
+    - cron: "0 * * * *"   # Every hour (UTC)
   workflow_dispatch:
   push:
     branches:
@@ -22,6 +22,9 @@ jobs:
       AQI_FORECAST_API_KEY: ${{ secrets.AQI_FORECAST_API_KEY }}
 
     steps:
+      # ------------------------
+      # 1. Setup environment
+      # ------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -40,47 +43,54 @@ jobs:
           echo "Python version:"
           python --version
           echo "Installed hopsworks version:"
-          pip list | grep hopsworks
+          pip list | grep hopsworks || echo "Hopsworks not found!"
 
-      # Step 1: Backfill latest data
-      - name: Backfill AQI & weather data
+      # ------------------------
+      # 2. Data Backfill
+      # ------------------------
+      - name: Backfill AQI & Weather Data
         run: python features/features/backfill.py
 
-      # Step 1.5: Run EDA on latest features
-      - name: Run EDA
+      # ------------------------
+      # 3. Exploratory Data Analysis (EDA)
+      # ------------------------
+      - name: Run EDA on latest features
         env:
           AQI_FORECAST_API_KEY: ${{ secrets.AQI_FORECAST_API_KEY }}
         run: python eda.py
 
-      # Step 1.6: Commit EDA outputs
-      - name: Commit EDA results
+      - name: Commit updated EDA outputs
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add eda_outputs/* || true
-          git commit -m "📊 Auto-update: EDA results [skip ci]" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git commit -m "Auto-update: EDA outputs [skip ci]" || echo "No EDA changes to commit"
+          git push || echo "No EDA changes to push"
 
-      # Step 2: Train model
+      # ------------------------
+      # 4. Train and Predict
+      # ------------------------
       - name: Train Random Forest model
         run: python trainings/train_sklearn.py
 
-      # Step 3: Predict using latest model
-      - name: Generate predictions
+      - name: Generate Predictions
         run: python trainings/predict.py
 
-      # Step 4: Commit predictions
-      - name: Commit prediction results
+      - name: Commit latest predictions
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/predictions/latest_predictions.csv || true
-          git commit -m "Auto-update: latest predictions [skip ci]" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git commit -m "Auto-update: Latest predictions [skip ci]" || echo "No prediction changes to commit"
+          git push || echo "No prediction changes to push"
 
+      # ------------------------
+      # 5. Sync EDA results to Dashboard
+      # ------------------------
       - name: Sync EDA outputs to dashboard
         run: |
           mkdir -p dashboard/eda_outputs
-          cp -r ../eda_outputs/* dashboard/eda_outputs/
-          echo "✅ EDA outputs copied to dashboard folder"
-        working-directory: dashboard
+          cp -r eda_outputs/* dashboard/eda_outputs/ || echo "No EDA outputs found"
+          git add dashboard/eda_outputs/* || true
+          git commit -m "🪄 Sync: EDA outputs to dashboard [skip ci]" || echo "No dashboard changes"
+          git push || echo "No dashboard changes to push"
