@@ -90,7 +90,7 @@ def main():
     os.makedirs("data/predictions", exist_ok=True)
     output_path = "data/predictions/latest_predictions.csv"
     pd.DataFrame([result]).to_csv(output_path, index=False)
-    log.info(f"📄 Saved latest prediction to {output_path}")
+    log.info(f"Saved latest prediction to {output_path}")
 
 if __name__ == "__main__":
     main()
