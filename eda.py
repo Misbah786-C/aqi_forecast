@@ -48,6 +48,12 @@ except Exception as e:
 OUTPUT_DIR = "eda_outputs"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# Convert timestamp column
+try:
+    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], unit="ms")
+except Exception as e:
+    logging.warning(f"⚠ Failed to convert timestamp: {e}")
+
 # 1. Summary stats
 summary = f"""
 📊 EDA Summary
@@ -64,7 +70,7 @@ logging.info("📄 Summary saved.")
 # 2. AQI Trend Over Time
 try:
     plt.figure(figsize=(10, 5))
-    sns.lineplot(data=df, x="timestamp", y="AQI", marker="o")
+    sns.lineplot(data=df, x="timestamp_utc", y="aqi_aqicn", marker="o")
     plt.title("AQI Over Time")
     plt.xlabel("Time (UTC)")
     plt.ylabel("AQI")
@@ -79,7 +85,7 @@ except Exception as e:
 # 3. Correlation Heatmap (focused on AQI)
 try:
     plt.figure(figsize=(8, 6))
-    correlations = df.corr(numeric_only=True)["AQI"].sort_values(ascending=False)
+    correlations = df.corr(numeric_only=True)["aqi_aqicn"].sort_values(ascending=False)
     sns.heatmap(correlations.to_frame(), annot=True, cmap="coolwarm", center=0)
     plt.title("Feature Correlation with AQI")
     plt.tight_layout()
@@ -90,11 +96,11 @@ except Exception as e:
     logging.warning(f"⚠ Failed to generate AQI correlation heatmap: {e}")
 
 # 4. Scatter Plots for AQI vs Weather Parameters
-weather_features = ["avg_temp", "avg_humidity", "wind_speed"]
+weather_features = ["ow_temp", "ow_humidity", "ow_wind_speed"]
 for feature in weather_features:
     try:
         plt.figure(figsize=(6, 4))
-        sns.scatterplot(data=df, x=feature, y="AQI")
+        sns.scatterplot(data=df, x=feature, y="aqi_aqicn")
         plt.title(f"AQI vs {feature}")
         plt.tight_layout()
         plt.savefig(os.path.join(OUTPUT_DIR, f"aqi_vs_{feature}.png"))
@@ -108,7 +114,7 @@ try:
     from joblib import load
     model = load("trained_model.joblib")  # Replace with your model path
     importances = model.feature_importances_
-    features = df.drop(columns=["AQI", "timestamp"]).columns[:len(importances)]
+    features = df.drop(columns=["aqi_aqicn", "timestamp_utc"]).columns[:len(importances)]
 
     plt.figure(figsize=(10, 6))
     sns.barplot(x=importances, y=features)
@@ -124,7 +130,7 @@ except Exception as e:
 try:
     predictions = pd.read_csv("predictions.csv")["AQI_Predicted"]  # Replace with your prediction source
     plt.figure(figsize=(10, 5))
-    sns.lineplot(x=range(len(df)), y=df["AQI"], label="Actual AQI")
+    sns.lineplot(x=range(len(df)), y=df["aqi_aqicn"], label="Actual AQI")
     sns.lineplot(x=range(len(df)), y=predictions, label="Predicted AQI")
     plt.title("Actual vs Predicted AQI Over Time")
     plt.xlabel("Time Index")
