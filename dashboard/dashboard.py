@@ -1,166 +1,166 @@
 import os
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 import streamlit as st
-from joblib import load
-import hopsworks
-import logging
+import plotly.express as px
+from datetime import datetime
 
-# ----------------------------
-# Logging
-# ----------------------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+# ---------------------------------------
+# Streamlit Page Configuration
+# ---------------------------------------
+st.set_page_config(
+    page_title="🌆 Karachi AQI & Weather Forecast",
+    page_icon="🌫️",
+    layout="wide"
+)
 
-# ----------------------------
-# Streamlit Page Setup
-# ----------------------------
-st.set_page_config(page_title="🌤️ AQI Forecast Dashboard", layout="wide")
+# ---------------------------------------
+# Load Data
+# ---------------------------------------
+PRED_PATH = "data/predictions/latest_predictions.csv"
 
-# ----------------------------
-# Custom CSS
-# ----------------------------
+@st.cache_data
+def load_data(path):
+    if os.path.exists(path):
+        return pd.read_csv(path)
+    else:
+        return pd.DataFrame()
+
+forecast_df = load_data(PRED_PATH)
+
+# ---------------------------------------
+# AQI Category Helper with Health Comments
+# ---------------------------------------
+def aqi_category(aqi):
+    if aqi <= 50:
+        return (
+            "Good",
+            "#009966",
+            "Air quality is satisfactory, and air pollution poses little or no risk."
+        )
+    elif aqi <= 100:
+        return (
+            "Moderate",
+            "#FFDE33",
+            "Acceptable air quality, but some pollutants may be a concern for sensitive individuals."
+        )
+    elif aqi <= 150:
+        return (
+            "Unhealthy for Sensitive Groups",
+            "#FF9933",
+            "Members of sensitive groups may experience health effects. The general public is less likely to be affected."
+        )
+    elif aqi <= 200:
+        return (
+            "Unhealthy",
+            "#CC0033",
+            "Everyone may begin to experience health effects; sensitive groups may experience more serious effects."
+        )
+    elif aqi <= 300:
+        return (
+            "Very Unhealthy",
+            "#660099",
+            "Health alert: everyone may experience more serious health effects. Avoid outdoor exertion."
+        )
+    else:
+        return (
+            "Hazardous",
+            "#7E0023",
+            "Emergency conditions: the entire population is likely to be affected. Stay indoors and avoid exposure."
+        )
+
+# ---------------------------------------
+# Custom Dark Theme Styling
+# ---------------------------------------
 st.markdown("""
     <style>
-    body, .main, .block-container {
-        background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%) !important;
-        color: #000000 !important;
-        font-family: 'Poppins', sans-serif !important;
+    body {
+        background: linear-gradient(180deg, #0d1b2a, #1b263b);
+        color: white;
     }
-    .title {font-size: 2.2em; font-weight: bold; color: #0d47a1 !important;}
-    .subtitle {font-size: 1.05em; color: #37474f !important; margin-bottom: 20px;}
-    .section-header {font-size: 1.3em; color: #0d47a1; font-weight: 600; margin-top: 20px;}
-    .card {
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 20px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-        text-align: center;
-        transition: 0.3s;
+    .stApp {
+        background: linear-gradient(180deg, #0d1b2a, #1b263b);
+        color: white;
     }
-    .card:hover {transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.08);}
+    div[data-testid="stMetricValue"] {
+        color: white;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# ----------------------------
+# ---------------------------------------
 # Header
-# ----------------------------
-st.markdown("<div class='title'>🌤️ AQI Forecast Dashboard</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>This dashboard loads your model and features from Hopsworks, generates predictions, and presents both EDA and forecast insights.</div>", unsafe_allow_html=True)
+# ---------------------------------------
+st.markdown("""
+    <div style='text-align:center; padding:10px 0;'>
+        <h1 style='color:#f0f0f0;'>🌆 Karachi AQI & Weather Forecast</h1>
+        <p style='color:#aaa;'>Live AQI predictions powered by Hopsworks Feature Store & OpenWeather APIs</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# ----------------------------
-# Connect to Hopsworks & Load Data + Model
-# ----------------------------
-try:
-    project = hopsworks.login()
-    fs = project.get_feature_store()
-    feature_group = fs.get_feature_group(name="aqi_features", version=1)
-    df = feature_group.read()
-    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], unit="ms")
+st.markdown("<hr style='border:1px solid #333;'>", unsafe_allow_html=True)
 
-    model = load("trained_model.joblib")
-    latest_df = df.sort_values("timestamp_utc").tail(3)
-    X = latest_df.drop(columns=["aqi_aqicn", "timestamp_utc"])
-    predicted_aqi = model.predict(X)
+# ---------------------------------------
+# AQI Forecast Section
+# ---------------------------------------
+if not forecast_df.empty:
+    forecast_df["predicted_for_utc"] = pd.to_datetime(forecast_df["predicted_for_utc"])
 
-    forecast_df = pd.DataFrame({
-        "Date": latest_df["timestamp_utc"].dt.date,
-        "Predicted_AQI": predicted_aqi
-    })
-    st.success("✅ Data and model loaded successfully from Feature Store.")
-except Exception as e:
-    st.error(f"❌ Failed to load data or model: {e}")
-    st.stop()
+    st.markdown("### 🌤 Next 3 Days AQI Forecast")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# ----------------------------
-# Helper Functions
-# ----------------------------
-def categorize_aqi(aqi):
-    if aqi <= 50: return "Good 🌿"
-    elif aqi <= 100: return "Moderate 😊"
-    elif aqi <= 150: return "Unhealthy (Sensitive) 😐"
-    elif aqi <= 200: return "Unhealthy 😷"
-    elif aqi <= 300: return "Very Unhealthy 🤒"
-    else: return "Hazardous ☠️"
+    # --- Forecast Cards ---
+    for i, row in enumerate(forecast_df.itertuples(), start=1):
+        aqi_val = float(row.predicted_aqi)
+        cat, color, comment = aqi_category(aqi_val)
+        date_str = row.predicted_for_utc.strftime("%A, %b %d")
 
-def get_icon(aqi):
-    if aqi <= 50: return "☀️"
-    elif aqi <= 100: return "🌤️"
-    elif aqi <= 150: return "🌥️"
-    elif aqi <= 200: return "🌧️"
-    else: return "🌫️"
-
-# ====================================================
-# SECTION 1 → AQI Forecast (Predictions)
-# ====================================================
-st.markdown("<div class='section-header'>📆 3-Day AQI Forecast</div>", unsafe_allow_html=True)
-
-cols = st.columns(3)
-for i, row in forecast_df.iterrows():
-    category = categorize_aqi(row['Predicted_AQI'])
-    icon = get_icon(row['Predicted_AQI'])
-    with cols[i]:
         st.markdown(f"""
-        <div class="card">
-            <h3>{row['Date'].strftime('%A')}</h3>
-            <h1>{icon}</h1>
-            <p><b>{int(row['Predicted_AQI'])}</b> AQI</p>
-            <p>{category}</p>
+        <div style="
+            background-color:#1e2a3a;
+            border-radius:15px;
+            padding:25px;
+            margin-bottom:20px;
+            box-shadow:0 4px 8px rgba(0,0,0,0.3);
+            border-left:8px solid {color};
+        ">
+            <h3 style="margin:0; color:#fff;">{date_str}</h3>
+            <h1 style="margin:5px 0 0 0; color:{color}; font-size:48px;">{aqi_val:.0f} AQI</h1>
+            <p style="color:{color}; font-weight:600; margin:2px 0;">{cat}</p>
+            <p style="color:#ccc; font-size:14px;">{comment}</p>
+            <p style="color:#777; font-size:13px;">Model v{int(row.model_version)} | Updated: {row.predicted_for_utc.strftime('%Y-%m-%d %H:%M UTC')}</p>
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("---")
+    # --- AQI Trend Chart ---
+    fig = px.line(
+        forecast_df,
+        x="predicted_for_utc",
+        y="predicted_aqi",
+        title="📈 3-Day AQI Forecast Trend",
+        markers=True,
+        color_discrete_sequence=["#00ccff"]
+    )
 
-# ====================================================
-# SECTION 2 → AQI Trend Visualization
-# ====================================================
-st.markdown("<div class='section-header'>📈 Predicted AQI Trend</div>", unsafe_allow_html=True)
-fig, ax = plt.subplots(figsize=(7, 3))
-sns.lineplot(data=forecast_df, x="Date", y="Predicted_AQI", marker="o", color="#1976d2", linewidth=2.5)
-ax.set_facecolor("#ffffff")
-ax.set_xlabel("Date")
-ax.set_ylabel("Predicted AQI")
-ax.set_title("Predicted AQI for Next 3 Days", fontsize=12, fontweight="bold")
-ax.grid(True, linestyle="--", alpha=0.3)
-st.pyplot(fig)
+    fig.update_layout(
+        title_x=0.35,
+        paper_bgcolor="#1b263b",
+        plot_bgcolor="#1b263b",
+        font=dict(color="white"),
+        xaxis=dict(title="Forecast Date", showgrid=True, gridcolor="#2f3e4e"),
+        yaxis=dict(title="Predicted AQI", showgrid=True, gridcolor="#2f3e4e"),
+        margin=dict(t=60, b=40, l=40, r=40)
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-# ====================================================
-# SECTION 3 → Exploratory Data Analysis (EDA)
-# ====================================================
-st.markdown("<div class='section-header'>🔍 Exploratory Data Analysis</div>", unsafe_allow_html=True)
-st.write("These insights are generated from your stored feature data in the Feature Store.")
+else:
+    st.warning("⚠️ No forecast data found. Please run your `predict.py` script first.")
 
-eda_col1, eda_col2 = st.columns(2)
-
-with eda_col1:
-    st.subheader("📊 AQI Over Time")
-    fig, ax = plt.subplots(figsize=(7, 3))
-    sns.lineplot(data=df, x="timestamp_utc", y="aqi_aqicn", color="#0d47a1", linewidth=1.8)
-    ax.set_xlabel("Timestamp (UTC)")
-    ax.set_ylabel("AQI")
-    ax.grid(alpha=0.3)
-    st.pyplot(fig)
-
-with eda_col2:
-    st.subheader("🔥 Feature Correlation with AQI")
-    corr = df.corr(numeric_only=True)["aqi_aqicn"].sort_values(ascending=False)
-    fig, ax = plt.subplots(figsize=(5, 4))
-    sns.heatmap(corr.to_frame(), annot=True, cmap="coolwarm", center=0)
-    st.pyplot(fig)
-
-st.markdown("### 🌦️ AQI vs Weather Features")
-weather_features = ["ow_temp", "ow_humidity", "ow_wind_speed"]
-wf_cols = st.columns(len(weather_features))
-
-for i, feature in enumerate(weather_features):
-    with wf_cols[i]:
-        fig, ax = plt.subplots(figsize=(4, 3))
-        sns.scatterplot(data=df, x=feature, y="aqi_aqicn", alpha=0.6)
-        ax.set_xlabel(feature)
-        ax.set_ylabel("AQI")
-        ax.grid(alpha=0.3)
-        st.pyplot(fig)
-
-st.markdown("---")
-st.info("✅ Dashboard complete — model predictions, EDA insights, and data visualizations loaded successfully.")
+# ---------------------------------------
+# Footer
+# ---------------------------------------
+st.markdown("<hr style='border:1px solid #333;'>", unsafe_allow_html=True)
+st.markdown("""
+    <div style='text-align:center; color:#999; font-size:13px;'>
+        Data sourced via AQICN & OpenWeather | Model deployed with Hopsworks 💨
+    </div>
+""", unsafe_allow_html=True)
