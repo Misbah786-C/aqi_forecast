@@ -77,3 +77,10 @@ jobs:
           git add data/predictions/latest_predictions.csv || true
           git commit -m "Auto-update: latest predictions [skip ci]" || echo "No changes to commit"
           git push || echo "No changes to push"
+
+      - name: Sync EDA outputs to dashboard
+        run: |
+          mkdir -p dashboard/eda_outputs
+          cp -r ../eda_outputs/* dashboard/eda_outputs/
+          echo "✅ EDA outputs copied to dashboard folder"
+        working-directory: dashboard
